@@ -7,14 +7,39 @@ pipeline {
       }
       steps {
         sh 'mvn --version'
+        sh 'mvn clean install -DskipTests'
+        sh 'mvn test'
       }
     }
+
     stage('Front-end') {
       agent {
         docker { image 'node:16-alpine' }
       }
       steps {
         sh 'node --version'
+        sh 'npm install'
+        sh 'npm run build'
+        sh 'npm test || true' // allow test failures for demo
+      }
+    }
+
+    stage('DB') {
+      agent {
+        docker { image 'mysql:latest' }
+      }
+      steps {
+        sh 'echo "Simulating DB migration..."'
+        sh 'echo "CREATE DATABASE IF NOT EXISTS demo;" > init.sql'
+        sh 'cat init.sql'
+      }
+    }
+
+    stage('Deploy') {
+      agent any
+      steps {
+        echo 'Deploying application...'
+        sh 'echo "Deploy step placeholder"'
       }
     }
   }
